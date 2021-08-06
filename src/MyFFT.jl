@@ -1,6 +1,7 @@
 using FFTW
 
 function FFT_1s(TimeDomain::Vector;fs=1, Window ="Hanning")
+    ## This function takes in a time domain vector, optional sampling rate "fs," and optional Hanning window
 if Window=="Hanning"
     CorFac = 2
     Window = WindowHanning(length(TimeDomain))
@@ -8,7 +9,7 @@ elseif Window=="none"
     CorFac = 1
 else
     error("Window not recognized")
-    
+
 end
 WindowedData = TimeDomain .* Window
 
