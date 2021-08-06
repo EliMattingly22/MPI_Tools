@@ -1,0 +1,13 @@
+name = "MPI_Tools"
+uuid = "97d903a3-cacc-4b79-8a19-43190c4af4ff"
+authors = ["Eli Mattingly"]
+version = "0.1.0"
+
+[compat]
+julia = "1.5"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
