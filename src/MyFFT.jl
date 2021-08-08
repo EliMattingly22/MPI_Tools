@@ -32,3 +32,85 @@ end
 function WindowHanning(N)
     return 0.5 .- 0.5 .* cos.(2 .* pi .* collect(0:(N-1)) ./ (N-1))
 end
+
+
+function known_aliasing(Data::Vector,fs,f_unwrap::Union{Float64,Vector};FreqBuf::Int = 1,oversamp::Int=1)
+
+freqs, ftData = FFT_1s(Data,fs=fs)
+L = length(Data)
+L_1s = length(ftData)
+T = 1/fs
+T_vec =0:T:((length(Data)-1)*T)
+df = fs/L
+
+MaxFreq = maximum(f_unwrap)
+ScaleFac = Int(ceil(MaxFreq/(fs/2)))*oversamp
+new_fs = ScaleFac*fs
+new_L = ScaleFac*L
+new_L_1s = Int(round(new_L/2))
+
+newFreqs = fftfreq(ScaleFac*L,new_fs)[1:new_L_1s]
+NewSpectra = Complex.(zeros(length(newFreqs)))
+NewSpectra[1:L_1s] = ftData[:]
+
+
+for i in 1:length(f_unwrap)
+    AliasedFreq = calcAlias(fs,f_unwrap[i])
+    AliasedIndex = Int(round(AliasedFreq/df))
+    NewIndex = Int(round(f_unwrap[i]/df))
+    StartInd_Alias = AliasedIndex-FreqBuf
+    StopInd_Alias = AliasedIndex+FreqBuf
+    StartInd_New = NewIndex-FreqBuf
+    StopInd_New = NewIndex+FreqBuf
+    if StartInd_Alias<1
+        StartInd_New = StartInd_New-StartInd_Alias
+        StartInd_Alias=1
+    end
+    if StopInd_Alias>length(ftData)
+        Overshoot = StopInd_Alias-length(ftData)
+        StopInd_New = StopInd_New-Overshoot
+        StopInd_Alias=length(ftData)
+    end
+    if StartInd_New<1
+        StartInd_New=1
+    end
+    if StopInd_New>length(NewSpectra)
+        StopInd_New=length(NewSpectra)
+    end
+    NewSpectra[StartInd_New:StopInd_New] = ftData[StartInd_Alias:StopInd_Alias]
+    NewSpectra[StartInd_Alias:StopInd_Alias] = zeros(length(StartInd_Alias:StopInd_Alias))
+
+    println("Actual freq: $(f_unwrap[i]). Aliased to: $(AliasedFreq)")
+
+end
+figure(1)
+plot(freqs,abs.(ftData),"g")
+stem(newFreqs,abs.(NewSpectra))
+
+FullSpectraNew = cat(conj.(reverse(NewSpectra[2:end]))[:],NewSpectra[:],dims=1)
+NewTimeDomain = ifft(FullSpectraNew.*length(FullSpectraNew))
+T_vec_new =0:T/ScaleFac:((length(NewTimeDomain)-1)*T/ScaleFac)
+figure(2)
+plot(T_vec,Data,"r")
+plot(T_vec_new,NewTimeDomain,"g")
+return FullSpectraNew,NewTimeDomain,T_vec_new
+
+end
+
+
+function calcAlias(fs,f)
+    #fs is the sampling rate
+    #df is the df in the DFT
+    #f is the actual waveform frequency
+
+    Nyqu = fs/2
+
+    Wraps = Int(floor(f / Nyqu)) #numer of full wraparounds
+    WrapDist = f % Nyqu # how far past the last wrap it will be
+
+    if ( Wraps % 2 )==0#if it is even, the wrap will be "backwards"
+        return AliasedFreq = WrapDist
+    else
+        return AliasedFreq = Nyqu-WrapDist
+    end
+end
