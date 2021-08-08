@@ -4,7 +4,7 @@ function THD_TimeSeries(TimeDataIn::Vector;MaxHarmonics=10, PlotOn=true)
 
     FFTFreqs, FT_1s_Mag = FFT_1s(TimeDataIn) #take FT of time domain
 
-    return THD_Core(FT_1s_Mag,FFTFreqs;PlotOn=PlotOn,Normalized=true)
+    return THD_Core(abs.(FT_1s_Mag),FFTFreqs;PlotOn=PlotOn,Normalized=true,MaxHarmonics=MaxHarmonics)
 end
 
 function THD_TimeSeries(TimeDataIn::Vector,fs;MaxHarmonics=10, PlotOn=true,Normalized=false)
@@ -13,12 +13,12 @@ function THD_TimeSeries(TimeDataIn::Vector,fs;MaxHarmonics=10, PlotOn=true,Norma
     #fs is the sampling rate in Hz
 
 
-    FFTFreqs, FT_1s_Mag = FFT_1s(TimeDataIn,fs) #take FT of time domain
-    return THD_Core(FT_1s_Mag,FFTFreqs;PlotOn=PlotOn,Normalized=Normalized)
+    FFTFreqs, FT_1s_Mag = FFT_1s(TimeDataIn,fs=fs) #take FT of time domain
+    return THD_Core(abs.(FT_1s_Mag),FFTFreqs;PlotOn=PlotOn,Normalized=Normalized,MaxHarmonics=MaxHarmonics)
 end
 
 
-function THD_Core(FT_1s_Mag,FFTFreqs;PlotOn=true, Normalized=true)
+function THD_Core(FT_1s_Mag,FFTFreqs;PlotOn=true, Normalized=true,MaxHarmonics=10)
 
 
     FundamentalMag, FundamentalIndex = findmax(FT_1s_Mag)
@@ -44,7 +44,7 @@ function THD_Core(FT_1s_Mag,FFTFreqs;PlotOn=true, Normalized=true)
         semilogy(FFTFreqs,FT_1s_Mag)
         semilogy(FFTFreqs[Int.(HarmonicArray[:,1])],HarmonicArray[:,2],"ro")
         title("THD = $THD_dB dB")
-        if Normalize
+        if Normalized
             xlabel("Normalized Frequency (cycles/sample)")
         else
             xlabel("Frequency (Hz)")

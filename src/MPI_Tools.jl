@@ -9,8 +9,6 @@ include("MyBisect.jl")
 
 
 # Write your package code here.
-function Test(A,B)
-  plot(A,B)
-end
+
 
 end

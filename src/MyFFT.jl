@@ -1,8 +1,9 @@
-function FFT_1s(TimeDomain::Vector;fs=1, Window ="Hanning")
+function FFT_1s(TimeDomain::Vector;fs=1, Window ="Hanning",PlotOn=false)
     ## This function takes in a time domain vector, optional sampling rate "fs," and optional Hanning window
+L = length(TimeDomain)
 if Window=="Hanning"
     CorFac = 2
-    Window = WindowHanning(length(TimeDomain))
+    Window = WindowHanning(L)
 elseif Window=="none"
     CorFac = 1
 else
@@ -10,11 +11,19 @@ else
 
 end
 WindowedData = TimeDomain .* Window
+if L%2==1
+    EndIndex = Int(round(L/2))
+else
+    EndIndex = Int(round(L/2))
+end
+FTData_1s = fft(WindowedData)[1:EndIndex]
+FTData_1s = FTData_1s ./ L #Corrects for vector length
+freqs = fftfreq(L,fs)[1:EndIndex]
 
-FTData_1s = fft(WindowedData)[1:Int(round(length(TimeDomain)/2))+1]
-FTData_1s = FTData_1s ./ length(TimeDomain) #Corrects for vector length
-freqs = fftfreq(length(WindowedData))[1:Int(round(length(TimeDomain)/2))+1]
-
+if PlotOn
+    plot(fftfreq(L),abs.(fft(WindowedData))./L)
+    plot(freqs,abs.(FTData_1s),"ro")
+end
 
 return freqs,FTData_1s
 end
