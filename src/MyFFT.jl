@@ -55,28 +55,22 @@ NewSpectra[1:L_1s] = ftData[:]
 
 
 for i in 1:length(f_unwrap)
-    AliasedFreq = calcAlias(fs,f_unwrap[i])
-    AliasedIndex = Int(round(AliasedFreq/df))
-    NewIndex = Int(round(f_unwrap[i]/df))
+    AliasedFreq = calcAlias(fs,f_unwrap[i]) #the freq. the frequency has aliased to
+    AliasedIndex = Int(round(AliasedFreq/df)) #the index of the aliased frequency
+if AliasedIndex==0
+    AliasedIndex=1
+end
+    NewIndex = Int(round(f_unwrap[i]/df)) #The new (corrected) index
+
+    IndexDistFromEdge = [AliasedIndex, length(AliasedFreq)-AliasedIndex, NewIndex,new_L_1s-NewIndex]
+    if minimum(abs.(IndexDistFromEdge))<FreqBuf
+        FreqBuf = minimum(abs.(IndexDistFromEdge))
+    end
     StartInd_Alias = AliasedIndex-FreqBuf
     StopInd_Alias = AliasedIndex+FreqBuf
     StartInd_New = NewIndex-FreqBuf
     StopInd_New = NewIndex+FreqBuf
-    if StartInd_Alias<1
-        StartInd_New = StartInd_New-StartInd_Alias
-        StartInd_Alias=1
-    end
-    if StopInd_Alias>length(ftData)
-        Overshoot = StopInd_Alias-length(ftData)
-        StopInd_New = StopInd_New-Overshoot
-        StopInd_Alias=length(ftData)
-    end
-    if StartInd_New<1
-        StartInd_New=1
-    end
-    if StopInd_New>length(NewSpectra)
-        StopInd_New=length(NewSpectra)
-    end
+
     NewSpectra[StartInd_New:StopInd_New] = ftData[StartInd_Alias:StopInd_Alias]
     NewSpectra[StartInd_Alias:StopInd_Alias] = zeros(length(StartInd_Alias:StopInd_Alias))
 
@@ -84,13 +78,15 @@ for i in 1:length(f_unwrap)
 
 end
 figure(1)
+subplot(211)
 plot(freqs,abs.(ftData),"g")
 stem(newFreqs,abs.(NewSpectra))
 
-FullSpectraNew = cat(conj.(reverse(NewSpectra[2:end]))[:],NewSpectra[:],dims=1)
+subplot(212)
+FullSpectraNew = FFT_1s_to2s(NewSpectra)
 NewTimeDomain = ifft(FullSpectraNew.*length(FullSpectraNew))
 T_vec_new =0:T/ScaleFac:((length(NewTimeDomain)-1)*T/ScaleFac)
-figure(2)
+# figure(2)
 plot(T_vec,Data,"r")
 plot(T_vec_new,NewTimeDomain,"g")
 return FullSpectraNew,NewTimeDomain,T_vec_new
@@ -113,4 +109,9 @@ function calcAlias(fs,f)
     else
         return AliasedFreq = Nyqu-WrapDist
     end
+end
+
+
+function FFT_1s_to2s(ftData)
+    return cat(ftData[:],conj.(reverse(ftData[2:end]))[:],dims=1)
 end
