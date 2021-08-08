@@ -1,5 +1,3 @@
-using FFTW
-
 function FFT_1s(TimeDomain::Vector;fs=1, Window ="Hanning")
     ## This function takes in a time domain vector, optional sampling rate "fs," and optional Hanning window
 if Window=="Hanning"
