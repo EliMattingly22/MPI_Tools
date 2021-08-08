@@ -4,8 +4,9 @@ function FFT_1s(TimeDomain::Vector; fs = 1, Window = "Hanning", PlotOn = false)
     if Window == "Hanning"
         CorFac = 2
         Window = WindowHanning(L)
-    elseif Window == "none"
+    elseif (Window == "none")|(Window == "None")
         CorFac = 1
+        Window = ones(L)
     else
         error("Window not recognized")
 
