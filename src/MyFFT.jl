@@ -85,10 +85,34 @@ for i = 1:length(f_unwrap)
             if minimum(abs.(IndexDistFromEdge)) < FreqBuf
                 FreqBuf = minimum(abs.(IndexDistFromEdge))
             end
+
             StartInd_Alias = AliasedIndex - FreqBuf
             StopInd_Alias = AliasedIndex + FreqBuf
             StartInd_New = NewIndex - FreqBuf
             StopInd_New = NewIndex + FreqBuf
+            if StopInd_Alias>length(ftData)
+                FreqBuf = FreqBuf-(StopInd_Alias-length(ftData))
+            end
+            if StartInd_Alias<0
+                FreqBuf = 0
+            end
+            if StopInd_New>length(NewSpectra)
+                FreqBuf = FreqBuf-(StopInd_New-length(NewSpectra))
+            end
+            if StartInd_New<0
+                FreqBuf = 0
+            end
+            
+            StartInd_Alias = AliasedIndex - FreqBuf
+            StopInd_Alias = AliasedIndex + FreqBuf
+            StartInd_New = NewIndex - FreqBuf
+            StopInd_New = NewIndex + FreqBuf
+
+            println(length(ftData))
+            println(StartInd_Alias)
+            println(StopInd_Alias)
+            println(StartInd_New)
+            println(StopInd_New)
 
             NewSpectra[StartInd_New:StopInd_New] =
                 ftData[StartInd_Alias:StopInd_Alias]
