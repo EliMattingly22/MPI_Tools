@@ -35,13 +35,14 @@ function WindowHanning(N)
 end
 
 @doc """
-This is a documentation test
+This is a documentation test2
 """-> function known_aliasing(
     Data::Vector,
     fs,
     f_unwrap::Union{Float64,Vector};
     FreqBuf::Int = 1,
     oversamp::Int = 1,
+    PlotOn=false
 )
 
     freqs, ftData = FFT_1s(Data, fs = fs)
@@ -98,18 +99,24 @@ for i = 1:length(f_unwrap)
         end
     end
 end
+
+FullSpectraNew = FFT_1s_to2s(NewSpectra)
+NewTimeDomain = ifft(FullSpectraNew .* length(FullSpectraNew))
+T_vec_new = 0:T/ScaleFac:((length(NewTimeDomain)-1)*T/ScaleFac)
+if PlotOn
     figure(1)
     subplot(211)
-    plot(freqs, abs.(ftData), "g")
-    stem(newFreqs, abs.(NewSpectra))
+    plot(freqs, abs.(ftData), "g",label="Orig data")
+    stem(newFreqs, abs.(NewSpectra),label="New data")
+    legend()
 
     subplot(212)
-    FullSpectraNew = FFT_1s_to2s(NewSpectra)
-    NewTimeDomain = ifft(FullSpectraNew .* length(FullSpectraNew))
-    T_vec_new = 0:T/ScaleFac:((length(NewTimeDomain)-1)*T/ScaleFac)
+
     # figure(2)
-    plot(T_vec, Data, "r")
-    plot(T_vec_new, NewTimeDomain, "g")
+    plot(T_vec, Data, "r",label="Orig data")
+    plot(T_vec_new, NewTimeDomain, "g",label="New data")
+    legend()
+end
     return FullSpectraNew, NewTimeDomain, T_vec_new
 
 end
