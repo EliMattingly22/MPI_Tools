@@ -34,8 +34,9 @@ function WindowHanning(N)
     return 0.5 .- 0.5 .* cos.(2 .* pi .* collect(0:(N-1)) ./ (N - 1))
 end
 
-
-function known_aliasing(
+@doc """
+This is a documentation test
+"""-> function known_aliasing(
     Data::Vector,
     fs,
     f_unwrap::Union{Float64,Vector};
@@ -60,8 +61,10 @@ function known_aliasing(
     NewSpectra = Complex.(zeros(length(newFreqs)))
     NewSpectra[1:L_1s] = ftData[:]
 
+    MovedIndex = [0] #freqs which have been moved to a new location due to aliasing already
 
-    for i = 1:length(f_unwrap)
+for i = 1:length(f_unwrap)
+    if f_unwrap[i] > fs / 2
         AliasedFreq = calcAlias(fs, f_unwrap[i]) #the freq. the frequency has aliased to
         AliasedIndex = Int(round(AliasedFreq / df)) #the index of the aliased frequency
         if AliasedIndex == 0
@@ -69,28 +72,32 @@ function known_aliasing(
         end
         NewIndex = Int(round(f_unwrap[i] / df)) #The new (corrected) index
 
-        IndexDistFromEdge = [
-            AliasedIndex,
-            length(AliasedFreq) - AliasedIndex,
-            NewIndex,
-            new_L_1s - NewIndex,
-        ]
-        if minimum(abs.(IndexDistFromEdge)) < FreqBuf
-            FreqBuf = minimum(abs.(IndexDistFromEdge))
+        if findfirst(x -> x == NewIndex, MovedIndex) == nothing
+            push!(MovedIndex, NewIndex)
+
+            IndexDistFromEdge = [
+                AliasedIndex,
+                length(AliasedFreq) - AliasedIndex,
+                NewIndex,
+                new_L_1s - NewIndex,
+            ]
+            if minimum(abs.(IndexDistFromEdge)) < FreqBuf
+                FreqBuf = minimum(abs.(IndexDistFromEdge))
+            end
+            StartInd_Alias = AliasedIndex - FreqBuf
+            StopInd_Alias = AliasedIndex + FreqBuf
+            StartInd_New = NewIndex - FreqBuf
+            StopInd_New = NewIndex + FreqBuf
+
+            NewSpectra[StartInd_New:StopInd_New] =
+                ftData[StartInd_Alias:StopInd_Alias]
+            NewSpectra[StartInd_Alias:StopInd_Alias] =
+                zeros(length(StartInd_Alias:StopInd_Alias))
+
+            println("Actual freq: $(f_unwrap[i]). Aliased to: $(AliasedFreq)")
         end
-        StartInd_Alias = AliasedIndex - FreqBuf
-        StopInd_Alias = AliasedIndex + FreqBuf
-        StartInd_New = NewIndex - FreqBuf
-        StopInd_New = NewIndex + FreqBuf
-
-        NewSpectra[StartInd_New:StopInd_New] =
-            ftData[StartInd_Alias:StopInd_Alias]
-        NewSpectra[StartInd_Alias:StopInd_Alias] =
-            zeros(length(StartInd_Alias:StopInd_Alias))
-
-        println("Actual freq: $(f_unwrap[i]). Aliased to: $(AliasedFreq)")
-
     end
+end
     figure(1)
     subplot(211)
     plot(freqs, abs.(ftData), "g")
