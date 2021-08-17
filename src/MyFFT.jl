@@ -1,4 +1,6 @@
-function FFT_1s(TimeDomain::Vector; fs = 1, Window = "Hanning", PlotOn = false)
+@doc """
+Takes the singles sided FFT. returns (frequencies, complex 1-sided FT)
+"""-> function FFT_1s(TimeDomain::Vector; fs = 1, Window = "Hanning", PlotOn = false)
     ## This function takes in a time domain vector, optional sampling rate "fs," and optional Hanning window
     L = length(TimeDomain)
     if Window == "Hanning"
@@ -30,7 +32,9 @@ function FFT_1s(TimeDomain::Vector; fs = 1, Window = "Hanning", PlotOn = false)
 end
 
 
-function WindowHanning(N)
+@doc """
+Creates a Hanning window of length N
+"""-> function WindowHanning(N)
     return 0.5 .- 0.5 .* cos.(2 .* pi .* collect(0:(N-1)) ./ (N - 1))
 end
 
@@ -102,7 +106,7 @@ for i = 1:length(f_unwrap)
             if StartInd_New<0
                 FreqBuf = 0
             end
-            
+
             StartInd_Alias = AliasedIndex - FreqBuf
             StopInd_Alias = AliasedIndex + FreqBuf
             StartInd_New = NewIndex - FreqBuf
@@ -146,7 +150,12 @@ end
 end
 
 
-function calcAlias(fs, f)
+@doc """
+Calculates the frequency some other freq. will alias to given a sampling rate, fs
+calcAlias(fs, f)
+fs is sampling rate
+f is the original freq
+"""-> function calcAlias(fs, f)
     #fs is the sampling rate
     #df is the df in the DFT
     #f is the actual waveform frequency

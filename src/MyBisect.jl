@@ -1,4 +1,11 @@
-function mybisect(f,a,b,n=50)
+@doc """
+A simple bisection solver. Included for backwards compatability with previous scripts.
+f is a function
+a is one starting point
+b is another starting point
+f(a) and f(b) must have opposite signs.
+n is optional and is the number of iterations
+"""->function mybisect(f,a,b,n=50)
 ## Introduction
 # Code from Introduction to Numerical Methods and Matlab Programming for
 # Engineers( P.19)
