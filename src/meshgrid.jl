@@ -32,7 +32,7 @@ end
 function meshgrid(xs;dims=3)
     if dims==3
         meshgrid(xs, xs,xs)
-    else if dims==2
+    elseif dims==2
         meshgrid(xs, xs)
     end
 
