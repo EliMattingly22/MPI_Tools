@@ -26,7 +26,7 @@ julia> XX
  If a single vector/range is inputted, for example X = 0:3 , it will output interpret it as meshgrid(X,X)
 
 """-> function meshgrid(xs, ys)
-    [xs[i] for i in 1:length(xs), j in 1:length(ys), k in 1:length(ys)], [ys[j] for i in 1:length(xs), j in 1:length(ys)]
+    [xs[i] for i in 1:length(xs), j in 1:length(ys)], [ys[j] for i in 1:length(xs), j in 1:length(ys)]
 end
 
 function meshgrid(xs;dims=3)
