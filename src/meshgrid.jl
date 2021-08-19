@@ -29,8 +29,13 @@ julia> XX
     [xs[i] for i in 1:length(xs), j in 1:length(ys), k in 1:length(ys)], [ys[j] for i in 1:length(xs), j in 1:length(ys)]
 end
 
-function meshgrid(xs)
-    meshgrid(xs, xs,xs)
+function meshgrid(xs;dims=3)
+    if dims==3
+        meshgrid(xs, xs,xs)
+    else if dims==2
+        meshgrid(xs, xs)
+    end
+
 end
 
 function meshgrid(xs,ys,zs)
